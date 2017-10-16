@@ -4,6 +4,10 @@ import csv
 import time
 import sys
 
+import Tkinter as tk # for python 2.7
+import tkFileDialog
+
+
 def writeToCSV(results, keys):
     filename = "study-result-%s.csv" % int(time.time())
     with open(filename, 'wb') as output_file:
@@ -63,9 +67,70 @@ def generateResults(basepath):
     writeToCSV(student_results, keys)
 
 # Future api: generateResults('source_directory', target_csv_file_name)
-basepath = '/Users/vishnunarang/Sites/results/CaptivateResults/Chilab/chilab/emergence'
+basepath = None
 
-if len(argv == 2):
+if (len(sys.argv) == 2):
     basepath = sys.argv[1]
 
-generateResults(basepath)
+# generateResults(basepath)
+
+# basepath = None
+
+def ask_directory(label):
+    global basepath
+    dir_opt = {}
+    dir_opt['initialdir'] = os.environ["HOME"] + '\\'
+    dir_opt['mustexist'] = False
+    dir_opt['title'] = 'Please select directory'
+    result = tkFileDialog.askdirectory(**dir_opt)
+    basepath = result
+    label.config(text="Directory selected: %s" % (basepath))
+
+
+def analyze_results():
+    global basepath
+    if not basepath:
+        basepath = '/Users/vishnunarang/Sites/results/CaptivateResults/Chilab/chilab/emergence'
+    generateResults(basepath)
+
+def center_window(root, width=300, height=200):
+    # get screen width and height
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+
+    # calculate position x and y coordinates
+    x = (screen_width/2) - (width/2)
+    y = (screen_height/2) - (height/2)
+    root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+
+def createGUI():
+    global basepath
+
+    root = tk.Tk()
+    root.title("Custom Captivatte Result Analyzer")
+    label = tk.Label(root)
+    label.config(text="Select the directory: ")
+    label.pack(padx=10, pady=10, side='top')
+    
+    dir_button = tk.Button(root, text='select directory', width=25, command=lambda: ask_directory(label), bg="blue")
+    dir_button.pack(padx=5, pady=10, side='top')
+
+    button_frame = tk.Frame(root, relief='raised', bd=1, pady=20)
+    button_frame.pack(pady=5)
+    
+    close_button = tk.Button(button_frame, text='Close', width=25, command=root.destroy, bg="red")
+    submit_button = tk.Button(button_frame, text='Submit', width=25, command=analyze_results, bg="green")
+
+    close_button.pack(padx=1, pady=10, fill='y', expand=1, side='left')
+    submit_button.pack(padx=10, pady=10, fill='y', side='left')    
+
+    center_window(root, 1000, 400)
+    root.attributes('-topmost', True)
+    root.update()
+    root.attributes('-topmost', False)
+    root.configure(pady=100)
+    root.mainloop() 
+
+createGUI()
+
+
