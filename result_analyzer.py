@@ -6,7 +6,7 @@ import sys
 
 import Tkinter as tk # for python 2.7
 import tkFileDialog
-
+import tkFont
 
 def writeToCSV(results, keys):
     filename = "study-result-%s.csv" % int(time.time())
@@ -72,11 +72,7 @@ basepath = None
 if (len(sys.argv) == 2):
     basepath = sys.argv[1]
 
-# generateResults(basepath)
-
-# basepath = None
-
-def ask_directory(label):
+def ask_directory(label, path):
     global basepath
     dir_opt = {}
     dir_opt['initialdir'] = os.environ["HOME"] + '\\'
@@ -84,7 +80,8 @@ def ask_directory(label):
     dir_opt['title'] = 'Please select directory'
     result = tkFileDialog.askdirectory(**dir_opt)
     basepath = result
-    label.config(text="Directory selected: %s" % (basepath))
+    label.config(text="Directory selected:")
+    path.config(text="%s" % (basepath))
 
 
 def analyze_results():
@@ -105,30 +102,44 @@ def center_window(root, width=300, height=200):
 
 def createGUI():
     global basepath
-
     root = tk.Tk()
-    root.title("Custom Captivatte Result Analyzer")
-    label = tk.Label(root)
-    label.config(text="Select the directory: ")
-    label.pack(padx=10, pady=10, side='top')
-    
-    dir_button = tk.Button(root, text='select directory', width=25, command=lambda: ask_directory(label), bg="blue")
-    dir_button.pack(padx=5, pady=10, side='top')
 
-    button_frame = tk.Frame(root, relief='raised', bd=1, pady=20)
-    button_frame.pack(pady=5)
-    
-    close_button = tk.Button(button_frame, text='Close', width=25, command=root.destroy, bg="red")
-    submit_button = tk.Button(button_frame, text='Submit', width=25, command=analyze_results, bg="green")
+    helv16 = tkFont.Font(root, family='Helvetica', size=14, weight=tkFont.BOLD)
+    h1 = tkFont.Font(root, family='Helvetica', size=24, weight=tkFont.BOLD)
 
-    close_button.pack(padx=1, pady=10, fill='y', expand=1, side='left')
-    submit_button.pack(padx=10, pady=10, fill='y', side='left')    
+    root.title("Custom Captivatte Result Analyzer - developed by Vishnu")
+
+    title = tk.Label(root, padx=20, pady=20, text="Captivate Result Analyzer.", font=h1)
+    title.pack()
+
+    dir_button = tk.Button(root, text='Select directory', padx=5, pady=20, width=25, command=lambda: ask_directory(label, path), bg="blue")
+    dir_button.pack(side='top')
+
+    label_frame = tk.Frame(root, padx=20, pady=30)
+    label_frame.pack()
+
+    label = tk.Label(label_frame)
+    label.config(text="Select the directory: ", font=helv16)
+    label.pack(padx=10, side='left')
+
+    path = tk.Label(label_frame)
+    path.config(text="...")
+    path.pack(side='left')
+
+    button_frame = tk.Frame(root, relief='raised', bd=1, pady=10, padx=20)
+    button_frame.pack()
+    
+    close_button = tk.Button(button_frame, text='Close', width=15, command=root.destroy, bg="red")
+    submit_button = tk.Button(button_frame, text='Submit', width=15, font=helv16, command=analyze_results, bg="green")
+
+    close_button.pack(padx=1, pady=10, fill='y', side='left')
+    submit_button.pack(padx=10, pady=10, fill='both', side='left')    
 
     center_window(root, 1000, 400)
     root.attributes('-topmost', True)
     root.update()
     root.attributes('-topmost', False)
-    root.configure(pady=100)
+    root.configure(pady=10)
     root.mainloop() 
 
 createGUI()
