@@ -1,78 +1,14 @@
+import subprocess
 import os
-import xml.etree.ElementTree
-import csv
-import time
 import Tkinter as tk  # for python 2.7
 import tkFileDialog
 import tkFont
 
+import modules.result_generator as result_generator
+
 # Used as a global variable.
 basepath = None
 destination_path = None
-
-
-def writeToCSV(results, keys):
-    """ Creates a csv file and writes the data from the <results> dictionary. """
-    global basepath
-    filename = "%s/study-result-%s.csv" % (destination_path, int(time.time()))
-    with open(filename, 'w') as output_file:
-        dict_writer = csv.DictWriter(output_file, keys)
-        dict_writer.writeheader()
-        dict_writer.writerows(results)
-
-
-def parseXMLFile(filepath, index):
-    """ Parse individual XML files and create the dictionary for a row in the CSV file. The keys need to be in a
-    certain order hence need special attention. """
-    root = xml.etree.ElementTree.parse(filepath).getroot()
-    row = {}
-    keys = []
-    row['Sr. No.'] = index + 1
-    keys.append('Sr. No.')
-    row['student-name'] = root.find('LearnerName').get('value')
-    keys.append('student-name')
-    row['status'] = root.find(".//Status").get('value')
-    keys.append('status')
-    row['score'] = root.find(".//Score").get('value')
-    keys.append('score')
-    row['session-time'] = root.find(".//SessionTime").get('value')
-    keys.append('session-time')
-
-    parse_questions(keys, root, row)
-
-    return keys, row
-
-
-def parse_questions(keys, root, row):
-    questions = root.findall(".//Interactions")
-    total_correct = 0
-    total_wrong = 0
-    keys.append('correct-count')
-    keys.append('wrong-count')
-    for i, question in enumerate(questions):
-        qn = "Answer to Question %d" % (i)
-        row[qn] = question.find('StudentResponse').get('value')
-        keys.append(qn)
-        # row['time-taken'] = question.find('Latency').get('value')
-        result = question.find('Result').get('value')
-        if result == 'W':
-            total_wrong += 1
-        elif result == 'C':
-            total_correct += 1
-    row['correct-count'] = total_correct
-    row['wrong-count'] = total_wrong
-
-
-def generateResults(dirpath):
-    student_results = []
-    keys = []
-    for i, filename in enumerate(os.listdir(dirpath)):
-        if filename.endswith(".xml"):
-            keys, result = parseXMLFile("%s/%s" % (dirpath, filename), i)
-            student_results.append(result)
-
-    writeToCSV(student_results, keys)
-
 
 def ask_directory(label, path, updated_text, directory_type):
     global basepath
@@ -90,10 +26,10 @@ def ask_directory(label, path, updated_text, directory_type):
 
 
 def analyze_results():
-    global basepath
+    global basepath, destination_path
     if not basepath:
         basepath = '/Users/vishnunarang/Sites/results/CaptivateResults/Chilab/chilab/emergence'
-    generateResults(basepath)
+    result_generator.generateResults(basepath, destination_path)
 
 
 def center_window(root, width=300, height=200):
@@ -164,8 +100,11 @@ def setup_directory_selection(helv16, root):
     path.config(text="...")
     path.pack(side='left')
 
+def open_in_finder(destination_path):
+    subprocess.call(["open", destination_path])
 
 def setup_action_buttons(helv16, root):
+    global destination_path
     button_frame = tk.Frame(root, relief='raised', bd=1, pady=10, padx=20)
     button_frame.pack()
     close_button = tk.Button(button_frame, text='Close', width=15, command=root.destroy, bg="red")
@@ -173,5 +112,6 @@ def setup_action_buttons(helv16, root):
     close_button.pack(padx=1, pady=10, fill='y', side='left')
     submit_button.pack(padx=10, pady=10, fill='both', side='left')
 
+    tk.Button(root, text='Open destination', width=15, command=lambda: open_in_finder(destination_path)).pack(pady=10)
 
 create_app_GUI()
