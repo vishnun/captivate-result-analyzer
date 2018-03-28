@@ -63,11 +63,14 @@ def parse_questions(keys, root, row):
     keys.append('wrong-count')
     keys.append('skipped')
 
+
     interaction_counter = 0
 
     for i, ans_el in enumerate(ans_els):
         qn = "Answer to Question %d" % (i)
         keys.append(qn)
+        lat = "latency for Qn %d" %(i)
+        keys.append(lat)
 
         answer = variables.find(ans_el).get('value')
         if answer != "":
@@ -75,11 +78,13 @@ def parse_questions(keys, root, row):
                 interaction = interactions[interaction_counter]
                 interaction_counter += 1
                 result = interaction.find("Result").get('value')
+                latency = interaction.find("Latency").get('value')
                 if result == 'W':
                     total_wrong += 1
                 elif result == 'C':
                     total_correct += 1
             row[qn] = answer
+            row[lat] = latency
         else:
             total_skipped += 1
 
